@@ -1,0 +1,287 @@
+===============================================
+** 더미데이터  **
+
+db.col2.insertMany([
+   {name: '홍길동', age: 21, etc: [{hobby: '등산', state: '율도국'}, {likenum: [1, 2, 3, 4, 5]}]},
+   {name: '임꺽정', age: 22, etc: [{hobby: '바둑', state: '대식국'}, {likenum: [2, 3, 4, 5, 6]}]},
+   {name: '장길산', age: 23, etc: [{hobby: '낚시', state: '탐라국'}, {likenum: [11, 22, 33, 44, 55]}]},
+   {name: '일지매', age: 24, etc: [{hobby: '없음', state: '우산국'}, {likenum: [12, 2, 23, 34, 45]}]},
+])
+
+===============================================
+db.col2.replaceOne()
+// 조건에 맞는데이터를 바꾸고싶을때 사용
+db.col2.replaceOne({조건식}, {교체할 내용})
+ -- 교체할내용은 다른 데이터 넣어야한다면 다른데이터 까지 추가 작성 
+// 모든 데이터를 바꾸고싶을땐 아래꺼 
+db.col2.replaceOne({}, {교체할 내용})
+
+=========================================
+db.col2.updateone()
+특정데이터 하나만 저격해서 변경하고싶을때 사용한다. 
+
+db.col2.updateOne(
+	{조건식},
+	{$set: {수정할 내용}}
+	)
+
+ex) 
+db.col2.updateOne(
+  {name:'장길산'},
+  {$set: {name:'사오정'}}
+)
+
+=== > 출력값
+{
+  _id: ObjectId("6530d48d34e64d199dbac6d8"),
+  name: '사오정',
+  age: 23,
+  etc: [
+    {
+      hobby: '낚시',
+      state: '탐라국'
+    },
+    {
+      likenum: [
+        11,
+        22,
+        33,
+        44,
+        55
+      ]
+    }
+  ]
+}
+
+=========================================
+upsert -> update랑 insert 합쳐놓은거 
+
+
+db.col2.updateOne(
+  {name:'무천도사'},
+  {$set: {name:'삼장법사', age: 3000}},
+  {upsert: true}
+)
+
+
+무천도사라는 데이터가 없는데 없을경우 insert 하게끔 진행한다. 
+ ==>  출력값 
+{
+  acknowledged: true,
+  insertedId: ObjectId("6530d9837981871e5c4b9981"),
+  matchedCount: 0,
+  modifiedCount: 0,
+  upsertedCount: 1
+}
+
+데이터를 뽑아보면 해당 데이터가 출력이 된다. 
+
+{
+  _id: ObjectId("6530d9837981871e5c4b9981"),
+  name: '삼장법사',
+  age: 3000
+}
+
+==========================================
+db.col2.updateOne(
+  {name:'저팔계'},
+  {$inc: {age: 3000}}
+)
+
+inc 하게되면  증가값 +
+
+출력값 => 
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+데이터 => 
+500 + 3000 값으로 증가해서 나오게 된다. 
+{
+  _id: ObjectId("6530d48d34e64d199dbac6d7"),
+  name: '저팔계',
+  age: 3500
+}
+
+mul 하게되면 '*'
+
+db.col2.updateOne(
+  {name:'사오정'},
+  {$mul: {age: 10}}
+)
+
+출력값 =>
+
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+
+결과 데이터  => 원래 사오정 나이 23 세에서 *10 이 되었다 . 
+
+{
+  _id: ObjectId("6530d48d34e64d199dbac6d8"),
+  name: '사오정',
+  age: 230,
+  etc: [
+    {
+      hobby: '낚시',
+      state: '탐라국'
+    },
+    {
+      likenum: [
+        11,
+        22,
+        33,
+        44,
+        55
+      ]
+    }
+  ]
+}
+
+
+================================================================
+
+$rename 
+
+db.col2.updateOne(
+  {name:'일지매'},
+  {$rename: {age: 'newAge'}}
+)
+
+
+출력값 =>
+
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+결과 데이터 => 필드값 age 가 newAge로 변경이된다 데이터 값은 변경되지않는다. 
+
+{
+  _id: ObjectId("6530d48d34e64d199dbac6d9"),
+  name: '일지매',
+  etc: [
+    {
+      hobby: '없음',
+      state: '우산국'
+    },
+    {
+      likenum: [
+        12,
+        2,
+        23,
+        34,
+        45
+      ]
+    }
+  ],
+  newAge: 24
+}
+
+=======================================================
+
+$max
+
+db.col2.updateOne(
+  {name:'삼장법사'},
+  {$max: {age: 3000}}
+)
+
+
+출력값 =>
+
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 0, // 3천으로 하니까 고친값이 없다. 
+  upsertedCount: 0
+}
+
+결과 데이터 =>  3000인 나이가 3000으로 동일 
+================================
+
+db.col2.updateOne(
+  {name:'삼장법사'},
+  {$max: {age: 3001}}
+)
+
+3001 로하니까 
+
+출력값 => 
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1, // 고친값이 있다 라는뜻 
+  upsertedCount: 0
+}
+
+결과 데이터 =>  3000인 나이가 3001로 변경됨 
+{
+  _id: ObjectId("6530d9837981871e5c4b9981"),
+  name: '삼장법사',
+  age: 3001
+}
+
+
+=======================================
+
+$min
+
+db.col2.updateOne(
+  {name:'삼장법사'},
+  {$min: {age: 3001}}
+)
+
+출력값 => 
+
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+{
+  _id: ObjectId("6530d9837981871e5c4b9981"),
+  name: '삼장법사',
+  age: 2800
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
